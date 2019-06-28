@@ -1,0 +1,72 @@
+#! /usr/bin/env bash
+
+set -euo pipefail
+
+function echo_task() {
+    echo -e " \e[33m*\e[39m $@"
+}
+
+function echo_sub_task() {
+    echo -e "   \e[33m*\e[39m $@"
+}
+
+function apt_update() {
+    echo_sub_task "Updating apt package lists..."
+    sudo chronic apt-get update
+}
+
+function apt_install_all() {
+    echo_sub_task "Installing $@"
+    for var in "$@"; do
+        apt_install "$var"
+    done
+}
+
+function apt_install() {
+    if dpkg --get-selections | grep -q "^$1[[:space:]]*install$" >/dev/null;
+    then
+        echo_sub_task "$1 already installed"
+    else
+        echo_sub_task "Installing $1"
+        sudo chronic apt-get install -y "$1"
+    fi
+}
+
+function apt_install_repo() {
+    echo_sub_task "Installing apt repository: $1"
+    sudo chronic add-apt-repository -y "$1"
+}
+
+function install_module() {
+    if [ -d "$1/.noinstall" ]; then
+        echo "Not a module: $1"
+        exit 1
+    else
+        echo_task "Installing: $1"
+
+        # Use a subshell so that the sourced functions don't mix between modules
+        (
+            . "$1/install"
+            install_ubuntu_18
+        )
+    fi
+}
+
+function install_setup_prerequisites() {
+    # moreutils: chronic
+    # software-properties-common: add-apt-repo
+    #   For older distros: python-software-properties
+    sudo apt-get -qq -y install \
+        apt-utils \
+        moreutils \
+        dialog \
+        software-properties-common \
+        wget
+
+}
+
+# Install setup script prerequisites
+install_setup_prerequisites
+
+install_module base
+install_module vim

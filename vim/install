@@ -1,0 +1,16 @@
+#! /usr/bin/env bash
+
+set -euo pipefail
+
+function install_ubuntu_18() {
+    # for older versions
+
+    apt_install_repo ppa:neovim-ppa/stable
+
+    apt_update
+
+    apt_install_all neovim
+
+    chronic pip install neovim
+    chronic pip3 install neovim
+}
