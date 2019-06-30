@@ -2,38 +2,72 @@
 
 set -euo pipefail
 
+script_dir="$(builtin cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+dotfiles_dir="$(builtin cd "$script_dir" && git rev-parse --show-toplevel)"
+dotfiles_backup_dir="$HOME/.dotfiles_original"
+indent_level=0
+
+
+function push_indent() {
+    indent_level=$((indent_level + 1))
+}
+
+function pop_indent() {
+    indent_level=$((indent_level - 1))
+}
+
 function echo_task() {
-    echo -e " \e[33m*\e[39m $@"
+    echo_level "$@"
 }
 
 function echo_sub_task() {
-    echo -e "   \e[33m*\e[39m $@"
+    push_indent
+    echo_level "$@"
+    pop_indent
+}
+
+function echo_level() {
+    for i in $(seq 1 $indent_level); do
+        printf "  "
+    done
+    echo -e " \e[33m*\e[39m $@"
+}
+
+
+error() {
+    printf "ERROR (%s) %s:%d]: %s\n" "${FUNCNAME[1]}" "${BASH_SOURCE[0]}" "${BASH_LINENO[0]}" "${1}"
+}
+
+fatal() {
+    printf "FATAL (%s) %s:%d]: %s\n" "${FUNCNAME[1]}" "${BASH_SOURCE[0]}" "${BASH_LINENO[0]}" "${1}"
+    exit 1
 }
 
 function apt_update() {
-    echo_sub_task "Updating apt package lists..."
+    echo_task "Updating apt package lists..."
     sudo chronic apt-get update
 }
 
 function apt_install_all() {
-    echo_sub_task "Installing $@"
+    echo_task "Installing: $@"
+    push_indent
     for var in "$@"; do
         apt_install "$var"
     done
+    pop_indent
 }
 
 function apt_install() {
-    if dpkg --get-selections | grep -q "^$1[[:space:]]*install$" >/dev/null;
-    then
-        echo_sub_task "$1 already installed"
+    if dpkg --get-selections | grep -q "^$1[[:space:]]*install$" >/dev/null; then
+        echo_task "$1 already installed"
     else
-        echo_sub_task "Installing $1"
+        echo_task "Installing: $1"
         sudo chronic apt-get install -y "$1"
     fi
 }
 
 function apt_install_repo() {
-    echo_sub_task "Installing apt repository: $1"
+    echo_task "Installing apt repository: $1"
     sudo chronic add-apt-repository -y "$1"
 }
 
@@ -46,8 +80,16 @@ function install_module() {
 
         # Use a subshell so that the sourced functions don't mix between modules
         (
+            push_indent
             . "$1/install"
-            install_ubuntu_18
+
+            if ! declare -f install_ubuntu_18 > /dev/null; then
+                fatal "No installation candidate for $1"
+            else
+                install_ubuntu_18
+            fi
+
+            pop_indent
         )
     fi
 }
@@ -56,17 +98,53 @@ function install_setup_prerequisites() {
     # moreutils: chronic
     # software-properties-common: add-apt-repo
     #   For older distros: python-software-properties
-    sudo apt-get -qq -y install \
+    echo_task "Installing: setup prerequisites"
+    sudo apt-get -qqq -y install \
         apt-utils \
         moreutils \
         dialog \
         software-properties-common \
-        wget
+        stow \
+        wget > /dev/null
 
 }
+
+function stow_directory() {
+  local target package
+  target="$1"
+  package="$2"
+  readonly target package
+
+  set -x
+  stow --verbose=1 --dir="$dotfiles_dir" --target="$target" --restow "$package"
+  set +x
+}
+
+#set -x
 
 # Install setup script prerequisites
 install_setup_prerequisites
 
 install_module base
 install_module vim
+
+install_module shells/common
+install_module shells/bash
+install_module shells/zsh
+
+if  [ -n "$dotfiles_backup_dir" ]; then
+    mkdir -p "$dotfiles_backup_dir"
+    echo "$dotfiles_backup_dir"
+    (builtin cd stow && find . -mindepth 1 -maxdepth 1) | while read existing; do
+        if [ -f "$HOME/$existing" ]; then
+            echo -n "Backing up existing dotfile: "
+            echo -n "`realpath $HOME/$existing`"
+            echo -n " -> "
+            echo "`realpath -s $dotfiles_backup_dir/$existing`"
+            mv "$HOME/$existing" "$dotfiles_backup_dir/$existing"
+        fi
+    done
+fi
+
+stow_directory "$HOME" stow
+

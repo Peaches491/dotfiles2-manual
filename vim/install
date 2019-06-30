@@ -9,8 +9,9 @@ function install_ubuntu_18() {
 
     apt_update
 
-    apt_install_all neovim
+    apt_install neovim
 
+    echo_sub_task "Installing: Python Neovim packages"
     chronic pip install neovim
     chronic pip3 install neovim
 }

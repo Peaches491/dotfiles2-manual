@@ -1,0 +1,1 @@
+../shells/bash/bashrc.bash
