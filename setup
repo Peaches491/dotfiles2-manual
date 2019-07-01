@@ -109,42 +109,42 @@ function install_setup_prerequisites() {
 
 }
 
+function backup_original_dotfiles() {
+    if  [ ! -d "$dotfiles_backup_dir" ]; then
+        mkdir -p "$dotfiles_backup_dir"
+        echo "$dotfiles_backup_dir"
+        (builtin cd stow && find . -mindepth 1 -maxdepth 1) | while read existing; do
+            if [ -f "$HOME/$existing" ]; then
+                echo -n "Backing up existing dotfile: "
+                echo -n "`realpath $HOME/$existing`"
+                echo -n " -> "
+                echo "`realpath -s $dotfiles_backup_dir/$existing`"
+                mv "$HOME/$existing" "$dotfiles_backup_dir/$existing"
+            fi
+        done
+    fi
+}
+
 function stow_directory() {
   local target package
   target="$1"
   package="$2"
   readonly target package
 
-  set -x
   stow --verbose=1 --dir="$dotfiles_dir" --target="$target" --restow "$package"
-  set +x
 }
 
-#set -x
-
 # Install setup script prerequisites
-install_setup_prerequisites
+#install_setup_prerequisites
 
-install_module base
-install_module vim
+#install_module base
+#install_module vim
 
-install_module shells/common
-install_module shells/bash
-install_module shells/zsh
+#install_module shells/common
+#install_module shells/bash
+#install_module shells/zsh
 
-if  [ -n "$dotfiles_backup_dir" ]; then
-    mkdir -p "$dotfiles_backup_dir"
-    echo "$dotfiles_backup_dir"
-    (builtin cd stow && find . -mindepth 1 -maxdepth 1) | while read existing; do
-        if [ -f "$HOME/$existing" ]; then
-            echo -n "Backing up existing dotfile: "
-            echo -n "`realpath $HOME/$existing`"
-            echo -n " -> "
-            echo "`realpath -s $dotfiles_backup_dir/$existing`"
-            mv "$HOME/$existing" "$dotfiles_backup_dir/$existing"
-        fi
-    done
-fi
+backup_original_dotfiles
 
 stow_directory "$HOME" stow
 

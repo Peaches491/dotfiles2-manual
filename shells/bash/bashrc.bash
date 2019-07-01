@@ -46,13 +46,13 @@ function git_prompt {
   local behind=""
   local ahead_re=".+ahead ([0-9]+).+"
   local behind_re=".+behind ([0-9]+).+"
-  [[ "$status_first_line" =~ "$ahead_re" ]] && ahead="$BASH_REMATCH[1]"
-  [[ "$status_first_line" =~ "$behind_re" ]] && behind="$BASH_REMATCH[1]"
+  [[ "$status_first_line" =~ "$ahead_re" ]] && ahead="${BASH_REMATCH[1]}"
+  [[ "$status_first_line" =~ "$behind_re" ]] && behind="${BASH_REMATCH[1]}"
 
   local upstream_remote=""
   local upstream_branch=""
   local upstream_re=".+\.\.\.([[:print:]]+)/([^[:space:]]+)"
-  [[ "$status_first_line" =~ "$upstream_re" ]] && upstream_remote="$BASH_REMATCH[1]" && upstream_branch="$BASH_REMATCH[2]"
+  [[ "$status_first_line" =~ "$upstream_re" ]] && upstream_remote="${BASH_REMATCH[1]}" && upstream_branch="${BASH_REMATCH[2]}"
 
   local stash_count="$(git stash list 2> /dev/null | wc -l | tr -d ' ')"
   local staged_count="$(tail -n +2 <<< "$stat" | grep -v '^[[:space:]?]'  | wc -l | tr -d ' ')"

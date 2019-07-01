@@ -1,0 +1,1 @@
+../../../shells/common/variables.sh

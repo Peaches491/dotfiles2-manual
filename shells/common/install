@@ -3,5 +3,5 @@
 set -euo pipefail
 
 function install_ubuntu_18() {
-    echo "Doing nothing!"
+    apt_install inotify-tools
 }
