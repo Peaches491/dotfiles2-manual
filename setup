@@ -49,21 +49,18 @@ function apt_update() {
 }
 
 function apt_install_all() {
-    echo_task "Installing: $@"
-    push_indent
-    for var in "$@"; do
-        apt_install "$var"
-    done
-    pop_indent
+    apt_install "$@"
 }
 
 function apt_install() {
-    if dpkg --get-selections | grep -q "^$1[[:space:]]*install$" >/dev/null; then
-        echo_task "$1 already installed"
-    else
-        echo_task "Installing: $1"
-        sudo chronic apt-get install -y "$1"
+    if [ "$#" -eq 1 ]; then
+        if dpkg --get-selections | grep -q "^$1[[:space:]]*install$" >/dev/null; then
+            echo_task "$1 already installed"
+            return 0
+        fi
     fi
+    echo_task "Installing: $@"
+    sudo chronic apt-get install -y "$@"
 }
 
 function apt_install_repo() {
@@ -112,7 +109,6 @@ function install_setup_prerequisites() {
 function backup_original_dotfiles() {
     if  [ ! -d "$dotfiles_backup_dir" ]; then
         mkdir -p "$dotfiles_backup_dir"
-        echo "$dotfiles_backup_dir"
         (builtin cd stow && find . -mindepth 1 -maxdepth 1) | while read existing; do
             if [ -f "$HOME/$existing" ]; then
                 echo -n "Backing up existing dotfile: "
@@ -135,14 +131,14 @@ function stow_directory() {
 }
 
 # Install setup script prerequisites
-#install_setup_prerequisites
+install_setup_prerequisites
 
-#install_module base
-#install_module vim
+install_module base
+install_module vim
 
-#install_module shells/common
-#install_module shells/bash
-#install_module shells/zsh
+install_module shells/common
+install_module shells/bash
+install_module shells/zsh
 
 backup_original_dotfiles
 

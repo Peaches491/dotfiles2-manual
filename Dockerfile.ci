@@ -1,4 +1,4 @@
-FROM ubuntu:16.04
+FROM ubuntu:18.04
 MAINTAINER Daniel Miller
 
 # OS updates and install
@@ -11,8 +11,8 @@ RUN usermod -aG sudo tester
 RUN echo "tester   ALL=(ALL:ALL) NOPASSWD: ALL" > /etc/sudoers
 
 # Add dotfiles and chown
-VOLUME /home/tester/dotfiles
-#DMDBG ADD . /home/tester/dotfiles
+#DMDBG VOLUME /home/tester/dotfiles
+ADD . /home/tester/dotfiles
 RUN chown -R tester:tester /home/tester
 
 # Switch testuser
@@ -23,6 +23,6 @@ ENV HOME /home/tester
 WORKDIR /home/tester/dotfiles
 
 # Run setup
-#DMDBG RUN ./setup
+RUN ./setup
 
 CMD ["/bin/bash"]

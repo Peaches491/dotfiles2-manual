@@ -12,12 +12,14 @@ fi
 #####################
 # Cross-shell aliases
 #####################
-alias -- -='cd -'  # go to the previous directory
-alias .....='cd ../../../..'
-alias ....='cd ../../..'
-alias ...='cd ../..'
-alias ..='cd ..'
-alias ~='cd'
+alias -- -='builtin cd -'  # go to the previous directory
+alias .......='builtin cd ../../../../../..'
+alias ......='builtin cd ../../../../..'
+alias .....='builtin cd ../../../..'
+alias ....='builtin cd ../../..'
+alias ...='builtin cd ../..'
+alias ..='builtin cd ..'
+alias ~='builtin cd'
 alias bb='bazel build '
 alias bba='bazel build ...'
 alias bt='bazel test '
@@ -63,7 +65,6 @@ alias webserver='python -m SimpleHTTPServer'  # Simple web server
 alias what=which
 alias when=date
 alias where=which
-alias which='type -a'
 alias venv='source venv/bin/activate'
 alias vnc_server='x11vnc -display :0 -noxdamage -rfbauth ~/.vnc/passwd'
 alias vnc_server_root='vnc_server -auth /var/run/lightdm/root/:0'

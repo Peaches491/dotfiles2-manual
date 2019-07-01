@@ -4,4 +4,21 @@ set -euo pipefail
 
 function install_ubuntu_18() {
     apt_install inotify-tools
+
+    echo_task "Installing locale: en"
+    push_indent
+        apt_install language-pack-en
+    pop_indent
+
+    echo_task "Install ssh-agent-canonicalize"
+    local sac_install_dir="$HOME/bin/"
+    local sac_target="$sac_install_dir/ssh-agent-canonicalize"
+
+    mkdir -p "$sac_install_dir"
+    chronic wget --output-document "$sac_target" \
+      "https://raw.githubusercontent.com/chpatton013/ssh-agent-canonicalize/master/ssh-agent-canonicalize"
+    chmod +x "$sac_target"
+
+    eval $("$sac_target")
+
 }
