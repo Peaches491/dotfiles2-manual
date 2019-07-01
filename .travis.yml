@@ -1,15 +1,23 @@
 sudo: required
+
 services:
 - docker
 
-# Handle git submodules yourself
 git:
-    submodules: false
+  submodules: false
 
-# Use sed to replace the SSH URL with the public URL, then initialize submodules
 before_install:
-    - sed -i 's/git@github.com:/https:\/\/github.com\//' .gitmodules
-    - git submodule update --init --recursive
+- [ -f ".gitmodules" ] && sed -i 's/git@github.com:/https:\/\/github.com\//' .gitmodules
+- git submodule update --init --recursive
 
 script:
 - docker build -f Dockerfile.ci .
+
+notifications:
+  pushover:
+    on_success: change
+    on_failure: always
+    api_key:
+      secure: mYd5JwzflY3G1lnIA6Ufx/qM4CXysZPuVehtDc3q19nnSiyMLBMHBAGrxDyRJnR4JphyyLZga0hmX0+E0QA+NNFwxM3f8vVelxKtvLvW8apOV0QXtaJKsLn90Xkkir1vm7oXG8YWT7Q5hEXXhbrUMnQ82XUTFsoeXGIcARizsx19AlFezYe7+nSZRheah02WugKENF0E/P0SsJ+SUe9Bth/i1hrb97C9iIFQvXymPVWqoom5bHpBaZRxD2xk7Mqlcg1kJeLQNe4oHduJjkHzCOxrAuSNZXOGMzk1KpcQYeGREoHbp2M7goUNbJHmkM9sCM44q3ryaIadBCnbf8n/mmSn+euffytehnWIRgJ/aIjloHvUFs+JLlsj2qgKNqSXU/09EwD3K5wZhIsfPcfdDSVvis+6jFKrQv5U37W9/3OQsPfs19GtrCwOc3QYMRezygoqJMLGVLmwk8F+oYZUucVJ/k1mSSgOZ2540+CpjhyGA5UWQPIcJFpbc1UMbDd02t66BUkp91y7OeQB0BihyA8XVXns86qvRbhs1cNLntNbYjkH/D8OJNzJ1zjYrxBYWuZJvwe6bWfv1LaehMNZnMfqNArZbPagKoOLpDR7KVhZXH4ou2R2tbtmJ034D46aYADmZ2km6b5a0qxxD/B8avVUnBe4h/NCR89rDEsePfA=
+    users:
+      secure: CpUoZbju+7kqspcIEL/3eyIm4GYlMCfpZZIxtekj+wtRQljMXZF++oNFshKjtCNAufvYt7pGbqojDwjakMyDUZ/TTiWgcXYexMxu4HLmYiqM/tzB4ad1mWQpR5qwx7vKfz+Ei6Uw1OmN8g+2rCv9xJSstxh2QOsqlNCpM2IhuWS1Uv7f78bXoWqr+QVk3RUVi/yhmZHFbEqT/ggN9VetMF7Xi9/M9eeEywJKRZtg34AEl2cgkWfjQ7+Je+Lwjj562N5hdWDW/Eb84if96xOO3TpPzoNwAo7zpPg+c9c1wEEp8j2JmVPsYttnshbLLEGNA9SCeJhkEbllFOTbWuNutJNTWtd5s/WSkyz7SFT0tdqkDPOe1clXE4d9wdwPH22Yv/zTyV2KtEKniG5JpAo7aB2MRQRp8bWJzGqoUclw0SaRtMeWWRrJcXxh/LhNSf9AdMmERkj0aCDJWTc44zh3MeIyh6oNlBRja5SIBqayGZ2W8fpvi8IGO8nMbIAZ+JXIBEmhO9hgd9aYaZVRzVZtpqfxQ17Dggmid45q19fbFz56XxK8dD627jMxZYbvYaM4HfT9cLg0/25+W6wbZPBtGDWEEdrc7v/Qg8WcLJzUpKXQxDrRI0TK65mGBwZ9BBaWz63JIfw37s/e74MnkkE4I7F+9AwkuE23epIUIMp9eK8=
